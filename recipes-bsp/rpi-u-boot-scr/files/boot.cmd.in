@@ -11,9 +11,9 @@ env set kernel_addr_r 0x05000000
 
 setexpr mender_kernel_part ${mender_boot_part} + 3
 setexpr mender_kernel_part_hex ${mender_boot_part_hex} + 3
-setenv mender_kernel_root mmc 0:${mender_kernel_part}
+env set mender_kernel_root mmc 0:${mender_kernel_part}
 
 load ${mender_kernel_root} ${kernel_addr_r} /@@KERNEL_IMAGETYPE@@
-@@KERNEL_BOOTCMD@@ ${kernel_addr_r} - -
+@@KERNEL_BOOTCMD@@ ${kernel_addr_r}
 run mender_try_to_recover
 
