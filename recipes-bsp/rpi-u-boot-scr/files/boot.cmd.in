@@ -1,0 +1,19 @@
+fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
+run mender_setup
+mmc dev ${mender_uboot_dev}
+
+# Set the kernel load address high for (self-)extracting kernels
+# so they don't override themselves not anything else. kernel_addr
+# is 0x8000 and ramdisk_addr is 0x02700000 (39MB). Hence we need to
+# load the kernel so even big ramdisk won't override it. 45MB for a
+# ramdisk should be fine
+env set kernel_addr_r 0x05000000
+
+setexpr mender_kernel_part ${mender_boot_part} + 3
+setexpr mender_kernel_part_hex ${mender_boot_part_hex} + 3
+setenv mender_kernel_root mmc 0:${mender_kernel_part}
+
+load ${mender_kernel_root} ${kernel_addr_r} /@@KERNEL_IMAGETYPE@@
+@@KERNEL_BOOTCMD@@ ${kernel_addr_r} - -
+run mender_try_to_recover
+
