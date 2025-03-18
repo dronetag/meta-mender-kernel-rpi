@@ -1,4 +1,6 @@
 fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
+env set bootargs "${bootargs} ${kernel_extra_args}"
+
 run mender_setup
 mmc dev ${mender_uboot_dev}
 
