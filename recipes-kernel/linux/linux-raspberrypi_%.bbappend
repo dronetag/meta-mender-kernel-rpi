@@ -13,3 +13,6 @@ UBOOT_DTB_LOADADDRESS = "0x02600000"
 # u-boot expects.
 UBOOT_RD_LOADADDRESS = "0x02700000"
 UBOOT_RD_ENTRYPOINT = "0x02700000"
+
+# Change to correct init when initramfs is used
+KERNEL_BOOTARGS += "${@bb.utils.contains('PACKAGE_INSTALL', 'initramfs-framework-base', ' init=/init', '', d)}"
