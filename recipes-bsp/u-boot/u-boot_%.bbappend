@@ -20,6 +20,9 @@ BOOT_CMD_CFG_FILE="${WORKDIR}/_bootcmd.cfg"
 
 UBOOT_EXTRA_CONFIGS="${BOOT_CMD_CFG_FILE}"
 
+# This needs to be in the local.conf file
+PREFERRED_PROVIDER_u-boot-default-script = "rpi-u-boot-scr-empty"
+
 do_configure:prepend() {
     BOOTCMD_FILE="${WORKDIR}/bootenv.cmd.inproc"
 
@@ -49,4 +52,3 @@ do_configure:prepend() {
 }
 
 UBOOT_CONFIG_FRAGMENTS += "${BOOT_CMD_CFG_FILE}"
-
