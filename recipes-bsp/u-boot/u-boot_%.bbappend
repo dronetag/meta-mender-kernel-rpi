@@ -23,6 +23,9 @@ UBOOT_EXTRA_CONFIGS="${BOOT_CMD_CFG_FILE}"
 # This needs to be in the local.conf file
 PREFERRED_PROVIDER_u-boot-default-script = "rpi-u-boot-scr-empty"
 
+KERNEL_EXTRA_BOOT_ARGS ??= ""
+UBOOT_BOOT_CONFIGURATION ??= ""
+
 do_configure:prepend() {
     BOOTCMD_FILE="${WORKDIR}/bootenv.cmd.inproc"
 
@@ -31,7 +34,8 @@ do_configure:prepend() {
         -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
         -e 's/@@BOOT_MEDIA@@/${BOOT_MEDIA}/' \
-        -e 's|@@KERNEL_EXTRA_ARGS@@|${KERNEL_EXTRA_ARGS}|' \
+        -e 's|@@KERNEL_EXTRA_BOOT_ARGS@@|${KERNEL_EXTRA_BOOT_ARGS}|' \
+        -e 's|@@UBOOT_BOOT_CONFIGURATION@@|${UBOOT_BOOT_CONFIGURATION}|' \
         "${WORKDIR}/bootenv.cmd.in" > "$BOOTCMD_FILE"
 
     # Step 1: Remove empty/whitespace-only lines and comment lines (lines starting with #)
@@ -47,7 +51,8 @@ do_configure:prepend() {
         -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
         -e 's/@@BOOT_MEDIA@@/${BOOT_MEDIA}/' \
-        -e 's|@@KERNEL_EXTRA_ARGS@@|${KERNEL_EXTRA_ARGS}|' \
+        -e 's|@@KERNEL_EXTRA_BOOT_ARGS@@|${KERNEL_EXTRA_BOOT_ARGS}|' \
+        -e 's|@@UBOOT_BOOT_CONFIGURATION@@|${UBOOT_BOOT_CONFIGURATION}|' \
         "${WORKDIR}/boot.cmd.in" > "${WORKDIR}/${UBOOT_ENV}.${UBOOT_ENV_SRC_SUFFIX}"
 }
 

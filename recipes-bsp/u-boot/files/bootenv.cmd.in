@@ -8,6 +8,8 @@ mmc dev ${mender_uboot_dev}
 # ramdisk should be fine
 env set kernel_addr_r 0x05000000
 
+setenv boot_config "@@UBOOT_BOOT_CONFIGURATION@@"
+
 setexpr mender_kernel_part ${mender_boot_part} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 setexpr mender_kernel_part_hex ${mender_boot_part_hex} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 env set mender_kernel_part_root mmc 0:${mender_kernel_part}
