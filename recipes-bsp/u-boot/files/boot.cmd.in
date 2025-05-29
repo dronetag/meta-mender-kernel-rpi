@@ -16,7 +16,28 @@ else
 fi
 
 # Boot args from bootloader
-fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
+fdt addr ${fdt_addr}
+
+# Read tryboot property (assume it's a uint32 or string '1')
+fdt get value tryboot_status_hex /chosen/bootloader tryboot
+setexpr tryboot_status $tryboot_status_hex
+if test "${tryboot_status}" = "1"; then
+    # Add the tryboot to the bootargs
+    env set bootargs "${bootargs} tryboot"
+fi
+
+# Read partition number (assume integer)
+fdt get value uboot_partition_hex /chosen/bootloader partition
+setexpr uboot_partition $uboot_partition_hex
+
+# Pass in the bootargs the uboot partition
+env set bootargs "${bootargs} ubootpartnum=${uboot_partition}"
+
+# Load the bootargs from bootloader and flatdevice tree
+fdt get value fdt_bootargs /chosen bootargs
+
+# Add additional bootargs from fdt_bootargs coming from bootloader and flatdevice tree
+env set bootargs "${bootargs} ${fdt_bootargs}"
 
 # Add additional bootargs from kernel build
 env set bootargs "${bootargs} root=${mender_kernel_root} @@KERNEL_EXTRA_BOOT_ARGS@@ ${extra_bootargs}"

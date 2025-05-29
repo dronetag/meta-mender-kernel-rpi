@@ -10,6 +10,21 @@ env set kernel_addr_r 0x05000000
 
 setenv boot_config "@@UBOOT_BOOT_CONFIGURATION@@"
 
+
+if test -z "${bootargs}"; then
+    setenv bootargs ""
+fi
+
+# TODO: Make the factory GPIO configurable
+# Configure GPIO 26 as input
+gpio input 26
+gpio read gpio_factory_val 26
+
+# Check if it's zero (LOW)
+if test "$gpio_factory_val" = "0"; then
+    setenv bootargs "${bootargs} rootrwreset factoryreset"
+fi
+
 setexpr mender_kernel_part ${mender_boot_part} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 setexpr mender_kernel_part_hex ${mender_boot_part_hex} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 env set mender_kernel_part_root mmc 0:${mender_kernel_part}
@@ -20,5 +35,6 @@ env set boot_script_addr 0x04000000
 imxtract ${kernel_addr_r} bootscr-boot.scr ${boot_script_addr}
 source ${boot_script_addr}
 
+setenv silent 0
 run mender_try_to_recover
 
