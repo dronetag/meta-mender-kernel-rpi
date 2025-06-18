@@ -35,6 +35,11 @@ load ${mender_kernel_part_root} ${kernel_addr_r} /@@KERNEL_IMAGETYPE@@
 imxtract ${kernel_addr_r} bootscr-boot.scr ${boot_script_addr}
 source ${boot_script_addr}
 
+# Restore the Console so we can access it
 setenv silent 0
+setenv stderr serial
+setenv stdin serial
+setenv stdout serial
+
 run mender_try_to_recover
 
