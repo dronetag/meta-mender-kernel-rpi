@@ -21,9 +21,17 @@ fi
 gpio input 26
 gpio read gpio_factory_val 26
 
-# Check if it's zero (LOW)
-if test "$gpio_factory_val" = "0"; then
+# Check if GPIO is LOW or factoryreset env var is set
+if test "${gpio_factory_val}" = "0" || test -n "${factoryreset}"; then
+    echo "Factory reset triggered"
     setenv bootargs "${bootargs} rootrwreset factoryreset"
+
+    # If factoryreset env var is set, clear and save it
+    if test -n "${factoryreset}"; then
+        echo "Clearing factoryreset env variable..."
+        setenv factoryreset
+        saveenv
+    fi
 fi
 
 setexpr mender_kernel_part ${mender_boot_part} + @@KERNELFS_OFFSET_TO_ROOTFS@@
