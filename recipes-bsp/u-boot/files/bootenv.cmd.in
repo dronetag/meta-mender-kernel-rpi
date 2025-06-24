@@ -17,9 +17,12 @@ if test -z "${bootargs}"; then
 fi
 
 # TODO: Make the factory GPIO configurable
-# Configure GPIO 26 as input
-gpio input 26
-gpio read gpio_factory_val 26
+# Configure GPIO 21 as input
+gpio input 21
+gpio read gpio_factory_val 21
+
+# TODO: Only for scout to prevent modem to be turned off in the system
+gpio clear 21
 
 # Check if GPIO is LOW or factoryreset env var is set
 if test "${gpio_factory_val}" = "0" || test -n "${factoryreset}"; then
@@ -33,6 +36,8 @@ if test "${gpio_factory_val}" = "0" || test -n "${factoryreset}"; then
         saveenv
     fi
 fi
+
+
 
 setexpr mender_kernel_part ${mender_boot_part} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 setexpr mender_kernel_part_hex ${mender_boot_part_hex} + @@KERNELFS_OFFSET_TO_ROOTFS@@
