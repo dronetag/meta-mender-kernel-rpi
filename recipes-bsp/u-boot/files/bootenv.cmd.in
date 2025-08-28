@@ -37,8 +37,6 @@ if test "${gpio_factory_val}" = "0" || test -n "${factoryreset}"; then
     fi
 fi
 
-
-
 setexpr mender_kernel_part ${mender_boot_part} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 setexpr mender_kernel_part_hex ${mender_boot_part_hex} + @@KERNELFS_OFFSET_TO_ROOTFS@@
 env set mender_kernel_part_root mmc 0:${mender_kernel_part}
@@ -55,4 +53,3 @@ setenv stdin serial
 setenv stdout serial
 
 run mender_try_to_recover
-

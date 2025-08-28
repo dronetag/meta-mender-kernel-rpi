@@ -32,6 +32,7 @@ do_patch:append() {
     generate_bootcmd_file(d)
 }
 
+
 def generate_bootenv_file(d):
     from pathlib import Path
     workdir = d.getVar("WORKDIR")
@@ -45,7 +46,7 @@ def generate_bootenv_file(d):
         .replace("@@UBOOT_BOOT_CONFIGURATION@@", d.getVar("UBOOT_BOOT_CONFIGURATION"))
     )
     # Step 1: Remove empty/whitespace-only lines and comment lines (lines starting with #)
-    bootenv_bootcmd = "; ".join(line for line in bootenv_bootcmd.splitlines() if line.strip() and not line.startswith("#"))
+    bootenv_bootcmd = "; ".join(line for line in bootenv_bootcmd.splitlines() if line.strip() and not line.strip().startswith("#"))
     # Step 2: Escape double quotes
     bootenv_bootcmd = bootenv_bootcmd.replace('"', '\\"')
     # Step 3: Write to .cfg fragment
@@ -70,37 +71,5 @@ def generate_bootcmd_file(d):
     uboot_env_src_suffix = d.getVar("UBOOT_ENV_SRC_SUFFIX")
     with open(f"{workdir}/{uboot_env}.{uboot_env_src_suffix}", "wt") as f:
         f.write(bootfile_content)
-
-
-#
-# Legacy do-configure
-#
-# do_configure:prepend() {
-#     BOOTCMD_FILE="${WORKDIR}/bootenv.cmd.inproc"
-#
-#     sed -e 's/@@KERNELFS_OFFSET_TO_ROOTFS@@/${KERNELFS_OFFSET_TO_ROOTFS}/' \
-#         -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
-#         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
-#         -e 's/@@BOOT_MEDIA@@/${BOOT_MEDIA}/' \
-#         -e 's|@@KERNEL_EXTRA_ARGS@@|${KERNEL_EXTRA_ARGS}|' \
-#         "${WORKDIR}/bootenv.cmd.in" > "$BOOTCMD_FILE"
-#
-#     BOOTCMD=$(sed '/^[[:space:]]*$/d' "$BOOTCMD_FILE" | sed '/^\s*#/d' | sed ':a;N;$!ba;s/\n/; /g')
-#
-#     # Step 2: Escape double quotes
-#     ESCAPED_BOOTCMD=$(echo "$BOOTCMD" | sed 's/"/\\"/g')
-#
-#     # Step 3: Write to .cfg fragment
-#     echo "CONFIG_BOOTCOMMAND=\"${ESCAPED_BOOTCMD}\"" > "${BOOT_CMD_CFG_FILE}"
-#
-#     sed -e 's/@@KERNELFS_OFFSET_TO_ROOTFS@@/${KERNELFS_OFFSET_TO_ROOTFS}/' \
-#         -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
-#         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
-#         -e 's/@@BOOT_MEDIA@@/${BOOT_MEDIA}/' \
-#         -e 's|@@KERNEL_EXTRA_BOOT_ARGS@@|${KERNEL_EXTRA_BOOT_ARGS}|' \
-#         -e 's|@@UBOOT_BOOT_CONFIGURATION@@|${UBOOT_BOOT_CONFIGURATION}|' \
-#         "${WORKDIR}/boot.cmd.in" > "${WORKDIR}/${UBOOT_ENV}.${UBOOT_ENV_SRC_SUFFIX}"
-# }
-
 
 UBOOT_CONFIG_FRAGMENTS += "${BOOT_CMD_CFG_FILE}"
