@@ -1,3 +1,8 @@
+# TODO: Move somewhere
+# Turn on status LED (18=R 23=G) yellow to signal power on
+gpio set 18
+gpio set 23
+
 run mender_setup
 mmc dev ${mender_uboot_dev}
 
@@ -10,7 +15,6 @@ env set kernel_addr_r 0x10000000
 env set boot_script_addr 0x0F000000
 
 setenv boot_config "@@UBOOT_BOOT_CONFIGURATION@@"
-
 
 if test -z "${bootargs}"; then
     setenv bootargs ""
@@ -45,6 +49,10 @@ load ${mender_kernel_part_root} ${kernel_addr_r} /@@KERNEL_IMAGETYPE@@
 
 imxtract ${kernel_addr_r} bootscr-boot.scr ${boot_script_addr}
 source ${boot_script_addr}
+
+# Set status LED to RED to signal kernel load failed
+gpio clear 23
+gpio set 18
 
 # Restore the Console so we can access it
 setenv silent 0
