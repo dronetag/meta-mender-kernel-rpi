@@ -54,10 +54,13 @@ source ${boot_script_addr}
 gpio clear 23
 gpio set 18
 
+# You can get to console by sending password (configured in CONFIG_AUTOBOOT_STOP_STR_CRYPT)
+# and saved in shared Hardware keypass.
+# TODO: Enable this in DEBUG mode
 # Restore the Console so we can access it
-setenv silent 0
-setenv stderr serial
-setenv stdin serial
-setenv stdout serial
+# setenv silent 0
+# setenv stderr serial
+# setenv stdin serial
+# setenv stdout serial
 
 run mender_try_to_recover
