@@ -1,7 +1,8 @@
 # TODO: Move somewhere
-# Turn on status LED (18=R 23=G) yellow to signal power on
-gpio set 18
+# Turn on status LED (22=R 23=G 27=B) yellow to signal power on
+gpio set 22
 gpio set 23
+gpio clear 27
 
 run mender_setup
 mmc dev ${mender_uboot_dev}
