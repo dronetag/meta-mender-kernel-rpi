@@ -10,6 +10,7 @@ SRC_URI += "\
     file://boot.cmd.in \
     file://bootcmd.cfg \
     file://_bootcmd.cfg \
+    file://setexpr-fmt.cfg \
 "
 
 UBOOT_ENV = "boot"
