@@ -27,6 +27,31 @@ PREFERRED_PROVIDER_u-boot-default-script = "rpi-u-boot-scr-empty"
 KERNEL_EXTRA_BOOT_ARGS ??= ""
 UBOOT_BOOT_CONFIGURATION ??= ""
 
+# Optional board-decode block for boot.cmd. The application supplies it
+# (Scout: generated from the board registry by dt-board-registry.bbclass).
+# It expands only into boot.cmd, which ships inside the signed FIT - never
+# into CONFIG_BOOTCOMMAND, so the decode stays OTA-updatable.
+DT_BOARD_SELECT ??= ""
+
+# The extra_bootargs hook appends U-Boot environment content to the
+# kernel command line - UNDER the signed boot chain, since the env is
+# unsigned flash. Development convenience only. Set to "0" to drop it
+# from boot.cmd entirely (production builds must).
+UBOOT_EXTRA_BOOTARGS_ENABLE ??= "1"
+
+
+def uboot_extra_bootargs_init(d):
+    if d.getVar("UBOOT_EXTRA_BOOTARGS_ENABLE") == "1":
+        return ('if test -z "${extra_bootargs}"; then\n'
+                '    setenv extra_bootargs ""\n'
+                'fi')
+    return '# extra_bootargs is disabled on this build (UBOOT_EXTRA_BOOTARGS_ENABLE=0)'
+
+def uboot_extra_bootargs_ref(d):
+    if d.getVar("UBOOT_EXTRA_BOOTARGS_ENABLE") == "1":
+        return ' ${extra_bootargs}'
+    return ''
+
 do_patch:append() {
     generate_bootenv_file(d)
     generate_bootcmd_file(d)
@@ -66,6 +91,9 @@ def generate_bootcmd_file(d):
         .replace("@@BOOT_MEDIA@@", d.getVar("BOOT_MEDIA"))
         .replace("@@KERNEL_EXTRA_BOOT_ARGS@@", d.getVar("KERNEL_EXTRA_BOOT_ARGS"))
         .replace("@@UBOOT_BOOT_CONFIGURATION@@", d.getVar("UBOOT_BOOT_CONFIGURATION"))
+        .replace("@@DT_BOARD_SELECT@@", d.getVar("DT_BOARD_SELECT"))
+        .replace("@@EXTRA_BOOTARGS_INIT@@", uboot_extra_bootargs_init(d))
+        .replace("@@EXTRA_BOOTARGS_REF@@", uboot_extra_bootargs_ref(d))
     )
     uboot_env = d.getVar("UBOOT_ENV")
     uboot_env_src_suffix = d.getVar("UBOOT_ENV_SRC_SUFFIX")

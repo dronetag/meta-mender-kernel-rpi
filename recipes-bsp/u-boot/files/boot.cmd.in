@@ -1,22 +1,22 @@
 
-# TODO Remove for production propably ? 
-if test -z "${overlays}"; then
-    setenv overlays ""
-fi
+@@EXTRA_BOOTARGS_INIT@@
 
-if test -z "${extra_bootargs}"; then
-    setenv extra_bootargs ""
-fi
+# Boot args and board identity come from the bootloader-provided FDT
+fdt addr ${fdt_addr}
+
+# Board decode (optional). When DT_BOARD_SELECT is set by the application,
+# this block reads the board model and the carrier strap from the FDT and
+# GPIO, then overrides boot_config with the matching FIT configuration.
+# It lives here, inside the signed FIT, so it is OTA-updatable and one
+# U-Boot binary serves every board. Empty by default.
+@@DT_BOARD_SELECT@@
 
 # If the u-boot configuration is specified, set fit_conf_spec
 if test -n "${boot_config}"; then
-    setenv fit_conf_spec "#${boot_config}${overlays}"
+    setenv fit_conf_spec "#${boot_config}"
 else
     setenv fit_conf_spec ""
 fi
-
-# Boot args from bootloader
-fdt addr ${fdt_addr}
 
 # Read tryboot property (assume it's a uint32 or string '1')
 fdt get value tryboot_status_hex /chosen/bootloader tryboot
@@ -40,6 +40,6 @@ fdt get value fdt_bootargs /chosen bootargs
 env set bootargs "${bootargs} ${fdt_bootargs}"
 
 # Add additional bootargs from kernel build
-env set bootargs "${bootargs} root=${mender_kernel_root} @@KERNEL_EXTRA_BOOT_ARGS@@ ${extra_bootargs}"
+env set bootargs "${bootargs} root=${mender_kernel_root} @@KERNEL_EXTRA_BOOT_ARGS@@@@EXTRA_BOOTARGS_REF@@"
 
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r}${fit_conf_spec}
