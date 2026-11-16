@@ -1,8 +1,39 @@
-# TODO: Move somewhere
-# Turn on status LED (22=R 23=G 27=B) yellow to signal power on
-gpio set 22
-gpio set 23
-gpio clear 27
+# Dronetag boot-pin convention. The application's device tree fills
+# these aliases, each pointing at a node whose gpios cell 1 is the pin:
+#   dt-status-led-red/-green/-blue   status LED
+#   dt-factory-reset                 factory-reset input
+# (Scout fills them from its overlays; the pins are defined once there.)
+# An unfilled alias leaves its dt_pin_* variable unset and the guarded
+# actions below skip that feature. fdt get value renders cells as
+# 0x-hex; the gpio command wants decimal, hence setexpr fmt.
+fdt addr ${fdt_addr}
+if fdt get value dt_path /aliases dt-status-led-red; then
+    if fdt get value dt_hex ${dt_path} gpios 1; then
+        setexpr dt_pin_led_r fmt %d ${dt_hex}
+    fi
+fi
+if fdt get value dt_path /aliases dt-status-led-green; then
+    if fdt get value dt_hex ${dt_path} gpios 1; then
+        setexpr dt_pin_led_g fmt %d ${dt_hex}
+    fi
+fi
+if fdt get value dt_path /aliases dt-status-led-blue; then
+    if fdt get value dt_hex ${dt_path} gpios 1; then
+        setexpr dt_pin_led_b fmt %d ${dt_hex}
+    fi
+fi
+if fdt get value dt_path /aliases dt-factory-reset; then
+    if fdt get value dt_hex ${dt_path} gpios 1; then
+        setexpr dt_pin_factory fmt %d ${dt_hex}
+    fi
+fi
+
+# Turn on status LED (R+G) yellow to signal power on
+if test -n "${dt_pin_led_r}"; then
+    gpio set ${dt_pin_led_r}
+    gpio set ${dt_pin_led_g}
+    gpio clear ${dt_pin_led_b}
+fi
 
 run mender_setup
 mmc dev ${mender_uboot_dev}
@@ -21,13 +52,13 @@ if test -z "${bootargs}"; then
     setenv bootargs ""
 fi
 
-# TODO: Make the factory GPIO configurable
-# Configure GPIO 21 as input
-gpio input 21
-gpio read gpio_factory_val 21
-
-# TODO: Only for scout to prevent modem to be turned off in the system
-gpio clear 21
+# Configure the factory-reset GPIO as input and read it
+setenv gpio_factory_val ""
+if test -n "${dt_pin_factory}"; then
+    gpio input ${dt_pin_factory}
+    gpio read gpio_factory_val ${dt_pin_factory}
+    gpio clear ${dt_pin_factory}
+fi
 
 # Check if GPIO is LOW or factoryreset env var is set
 if test "${gpio_factory_val}" = "0" || test -n "${factoryreset}"; then
@@ -51,9 +82,12 @@ load ${mender_kernel_part_root} ${kernel_addr_r} /@@KERNEL_IMAGETYPE@@
 imxtract ${kernel_addr_r} bootscr-boot.scr ${boot_script_addr}
 source ${boot_script_addr}
 
-# Set status LED to RED to signal kernel load failed
-gpio clear 23
-gpio set 18
+# Kernel load failed: status LED to solid red
+if test -n "${dt_pin_led_r}"; then
+    gpio set ${dt_pin_led_r}
+    gpio clear ${dt_pin_led_g}
+    gpio clear ${dt_pin_led_b}
+fi
 
 # You can get to console by sending password (configured in CONFIG_AUTOBOOT_STOP_STR_CRYPT)
 # and saved in shared Hardware keypass.
